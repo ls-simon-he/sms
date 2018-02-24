@@ -14,6 +14,7 @@ function validateMessage(message) {
   return message !== '' && message.length <= MAX_MESSAGE;
 }
 
+// Convert mobile number like: 0430948926 to 61430948926
 function convertMobile(mobile) {
   return `61${mobile.substr(1)}`;
 }
@@ -74,17 +75,14 @@ export default class MessageForm extends Component {
       method: 'POST'
     })
       .then(res => {
-        if (!res.ok) {
-          this.setState({
+        const result = res.ok ? {
+          sendSuccess: true
+        } : {
             sendFail: true
-          });
-        } else {
-          this.setState({
-            sendSuccess: true
-          });
-        }
+          };
         this.setState({
-          sendDisabled: false
+          sendDisabled: false,
+          ...result
         });
       })
       .catch((error) => {
