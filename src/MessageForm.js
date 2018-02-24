@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Input, FormFeedback, Alert } from 'reactstrap';
 
+// Each SMS message has at most 160 characters. 
+// Here it can support at most 3 messages in one go.
 const MAX_MESSAGE = 480;
 
 function validateMobile(mobile) {
@@ -22,7 +24,9 @@ export default class MessageForm extends Component {
     this.state = {
       sendDisabled: true,
       mobile: '',
-      message: ''
+      message: '',
+      sendSuccess: false,
+      sendFail: false
     };
     this.onMobileChange = this.onMobileChange.bind(this);
     this.onMessageChange = this.onMessageChange.bind(this);
@@ -33,7 +37,9 @@ export default class MessageForm extends Component {
     const value = e.target.value;
     this.setState({
       mobile: value,
-      sendDisabled: !validateMobile(value) || !validateMessage(this.state.message)
+      sendDisabled: !validateMobile(value) || !validateMessage(this.state.message),
+      sendSuccess: false,
+      sendFail: false
     });
   }
 
@@ -41,12 +47,19 @@ export default class MessageForm extends Component {
     const value = e.target.value;
     this.setState({
       message: value,
-      sendDisabled: !validateMobile(this.state.mobile) || !validateMessage(value)
+      sendDisabled: !validateMobile(this.state.mobile) || !validateMessage(value),
+      sendSuccess: false,
+      sendFail: false
     });
   }
- 
+
   onSendClick(e) {
     e.preventDefault();
+    this.setState({
+      sendDisabled: true,
+      sendSuccess: false,
+      sendFail: false
+    });
     const data = {
       mobile: convertMobile(this.state.mobile),
       message: this.state.message
@@ -60,23 +73,48 @@ export default class MessageForm extends Component {
       },
       method: 'POST'
     })
-      .then(response => {
-        const result = response.json();
-        console.log(result);
+      .then(res => {
+        if (!res.ok) {
+          this.setState({
+            sendFail: true
+          });
+        } else {
+          this.setState({
+            sendSuccess: true
+          });
+        }
+        this.setState({
+          sendDisabled: false
+        });
       })
+      .catch((error) => {
+        console.log(error);
+        this.setState({
+          sendDisabled: false
+        });
+      });
   }
 
   render() {
     return (
       <div className="Message-form">
+        {this.state.sendSuccess && <Alert color="success">
+          Message sending succeeded.
+          </Alert>
+        }
+        {this.state.sendFail && <Alert color="warning">
+          Message sending failed.
+          </Alert>
+        }
         <Form>
           <FormGroup>
             <Label for="mobile">Mobile number:</Label>
             <Input type="text" id="mobile" value={this.state.mobile} onChange={this.onMobileChange} placeholder="Mobile Number" />
+            <FormFeedback>Invalid</FormFeedback>
           </FormGroup>
           <FormGroup>
-            <Label for="message">Message({this.state.message.length}):</Label>
-            <Input type="textarea" name="text" value={this.state.message} onChange={this.onMessageChange} id="message" />
+            <Label for="message">Message ({this.state.message.length} / {MAX_MESSAGE}):</Label>
+            <Input type="textarea" name="text" maxLength={MAX_MESSAGE} value={this.state.message} onChange={this.onMessageChange} id="message" />
           </FormGroup>
           <Button color="primary" onClick={this.onSendClick} disabled={this.state.sendDisabled} >Send</Button>
         </Form>

@@ -4,11 +4,6 @@ import './App.css';
 import MessageForm from './MessageForm';
 
 class App extends Component {
-
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <div className="App">
