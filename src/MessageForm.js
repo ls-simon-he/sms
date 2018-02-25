@@ -20,13 +20,6 @@ function validateMessage(message) {
   return message !== '' && message.length <= MAX_MESSAGE;
 }
 
-// Convert mobile number like: 0430948926 to 61430948926
-// @param string mobile
-// @return string
-function convertMobile(mobile) {
-  return `61${mobile.substr(1)}`;
-}
-
 export default class MessageForm extends Component {
   constructor(props) {
     super(props);
@@ -70,7 +63,7 @@ export default class MessageForm extends Component {
       sendFail: false
     });
     const data = {
-      mobile: convertMobile(this.state.mobile),
+      mobile: this.state.mobile,
       message: this.state.message
     };
     fetch('/send', {

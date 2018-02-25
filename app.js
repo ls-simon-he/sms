@@ -12,11 +12,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', express.static('build'));
 
 app.post('/send', async (req, res) => {
+    const mobile = req.body.mobile || '';
+    const message = req.body.message || '';
+    if (mobile === '' || !/^0\d{9}$/.test(mobile)) {
+        return res.status(400).send('bad mobile');
+    }
+    if (message === '' || message.length > 480) {
+        return res.status(400).send('bad message');
+    }
     try {
-        await burstSMSClient.send(req.body.mobile, req.body.message);
+        await burstSMSClient.send(mobile, message);
         return res.send('success');
     } catch (error) {
-        console.log(`Failed to send message: ${req.body.mobile}`, error);
+        console.log(`Failed to send message: ${mobile}`, error);
         return res.status(500).send('error');
     }
 });
