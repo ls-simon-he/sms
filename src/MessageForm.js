@@ -1,20 +1,28 @@
 import React, { Component } from 'react';
-import { Button, Form, FormGroup, Label, Input, FormFeedback, Alert } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
 
 // Each SMS message has at most 160 characters. 
 // Here it can support at most 3 messages in one go.
 const MAX_MESSAGE = 480;
 
+// Validate the mobile
+// @param string mobile
+// @return boolean
 function validateMobile(mobile) {
   // Here we only support Australia mobile number
   return mobile !== '' && /^0\d{9}$/.test(mobile)
 }
 
+// Validate the message
+// @param string message
+// @return boolean
 function validateMessage(message) {
   return message !== '' && message.length <= MAX_MESSAGE;
 }
 
 // Convert mobile number like: 0430948926 to 61430948926
+// @param string mobile
+// @return string
 function convertMobile(mobile) {
   return `61${mobile.substr(1)}`;
 }
@@ -76,7 +84,9 @@ export default class MessageForm extends Component {
     })
       .then(res => {
         const result = res.ok ? {
-          sendSuccess: true
+          sendSuccess: true,
+          mobile: '',
+          message: '',
         } : {
             sendFail: true
           };
@@ -108,7 +118,6 @@ export default class MessageForm extends Component {
           <FormGroup>
             <Label for="mobile">Mobile number:</Label>
             <Input type="text" id="mobile" value={this.state.mobile} onChange={this.onMobileChange} placeholder="Mobile Number" />
-            <FormFeedback>Invalid</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for="message">Message ({this.state.message.length} / {MAX_MESSAGE}):</Label>
